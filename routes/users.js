@@ -1,11 +1,18 @@
 const express = require("express");
 const z = require("zod");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const { verificaEmail, saveUser } = require("../database/users");
 
 const router = express.Router();
 
 const UserSchema = z.object({
     nome: z.string().min(3),
+    email: z.string().email(),
+    senha: z.string().min(6)
+})
+
+const LoginSchema = z.object({
     email: z.string().email(),
     senha: z.string().min(6)
 })
@@ -21,7 +28,9 @@ router.post("/registro", async (req, res) => {
             message: "Email já cadastrado.",
         });
 
+        const senhaHash = bcrypt.hashSync(user.senha, 10);
 
+        user.senha = senhaHash;
 
         const savedUser = await saveUser(user);
         delete savedUser.senha;
@@ -37,6 +46,26 @@ router.post("/registro", async (req, res) => {
             message: "Erro no servidor",
         });
     };
+})
+
+router.post("/login", async (req, res) => {
+    const data = LoginSchema.parse(req.body);
+
+    const user = await verificaEmail(data.email);
+    if (!user) return res.status(401).send();
+
+    const senha = bcrypt.compareSync(data.senha, user.senha);
+    if (!senha) return res.status(401).send();
+
+    user.id = req.userId;
+
+    const token = jwt.sign({
+        userId: user.id,
+    }, process.env.SECRET);
+
+    res.status(201).json({
+        token,
+    });
 })
 
 module.exports = router;
