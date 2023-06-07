@@ -43,10 +43,19 @@ const removerReceita = (id, userId) => {
     })
 }
 
+const buscaReceitaPorId = (id) => {
+    return prisma.receita.findMany({
+        where: {
+            id: id,
+        },
+    });
+}
+
 
 module.exports = {
     salvarReceita,
     buscaReceitas,
     atualizarReceita,
-    removerReceita
+    removerReceita,
+    buscaReceitaPorId
 }

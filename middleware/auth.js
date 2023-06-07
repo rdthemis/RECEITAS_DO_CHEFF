@@ -1,10 +1,11 @@
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { usuarioNaoCadastrado } = require('../errors/errors');
 
 const auth = (req, res, next) => {
     try {
         const authorization = req.headers.authorization;
 
-        if (!authorization) return res.status(401).send();
+        if (!authorization) throw new usuarioNaoCadastrado();
 
         const token = authorization.split(" ")[1];
 
@@ -15,7 +16,7 @@ const auth = (req, res, next) => {
         next();
 
     } catch (error) {
-        return res.status(401).send();
+        next(error);
     }
 
 };

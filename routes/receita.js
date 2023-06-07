@@ -1,7 +1,8 @@
 const express = require("express");
 const z = require("zod");
 const auth = require("../middleware/auth");
-const { salvarReceita, buscaReceitas, atualizarReceita, removerReceita } = require("../database/receita");
+const { salvarReceita, buscaReceitas, atualizarReceita, removerReceita, buscaReceitaPorId } = require("../database/receita");
+const { errorEmail, receitaNaoencontrada } = require("../errors/errors");
 
 const router = express.Router();
 
@@ -11,46 +12,41 @@ const ReceitaSchema = z.object({
     tempoPreparo: z.string()
 })
 
-router.post("/receita", auth, async (req, res) => {
+router.post("/receita", auth, async (req, res, next) => {
     try {
 
         const receita = ReceitaSchema.parse(req.body);
         const userId = req.user.userId;
 
         const receitaSalva = await salvarReceita(receita, userId);
+        if (!receitaSalva) throw new errorEmail;
 
         res.status(201).json({
             receitaSalva,
         });
     } catch (error) {
-        if (error instanceof z.ZodError)
-            return res.status(422).json({
-                message: error.errors,
-            });
-        res.status(500).json({
-            message: "Erro no servidor",
-        });
+        next(error);
     };
 })
 
-router.get("/receitas", auth, async (req, res) => {
+router.get("/receitas", auth, async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const receitas = await buscaReceitas(userId);
 
-        res.status(201).json({
+        res.status(200).json({
             receitas,
         });
     } catch (error) {
-        res.status(401).json({
-            message: error.errors,
-        });
+        next(error);
     };
 })
 
-router.put("/receita/:id", auth, async (req, res) => {
+router.put("/receita/:id", auth, async (req, res, next) => {
     try {
         const id = Number(req.params.id);
+
+        //const receitaBD = await buscaReceitaPorId(id);
 
         const userId = req.user.userId;
 
@@ -58,21 +54,17 @@ router.put("/receita/:id", auth, async (req, res) => {
 
         const receitaAtualizada = await atualizarReceita(receita, id, userId);
 
-        res.status(201).json({
-            updatedReceita,
+        if (receitaAtualizada.count < 1) throw new receitaNaoencontrada();
+
+        res.status(200).json({
+            receitaAtualizada,
         });
     } catch (error) {
-        if (error instanceof z.ZodError)
-            return res.status(422).json({
-                message: error.errors,
-            });
-        res.status(500).json({
-            message: "Erro no servidor",
-        });
+        next(error);
     }
 })
 
-router.delete("/receita/:id", auth, async (req, res) => {
+router.delete("/receita/:id", auth, async (req, res, next) => {
     try {
         const id = Number(req.params.id);
 
@@ -84,9 +76,7 @@ router.delete("/receita/:id", auth, async (req, res) => {
             receitaRemovida
         });
     } catch (error) {
-        res.status(500).json({
-            message: "Erro no Servidor",
-        });
+        next(error);
     }
 });
 

@@ -3,6 +3,7 @@ const z = require("zod");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { verificaEmail, saveUser } = require("../database/user");
+const { errorEmail } = require("../errors/errors");
 
 const router = express.Router();
 
@@ -17,16 +18,14 @@ const LoginSchema = z.object({
     senha: z.string().min(6)
 })
 
-router.post("/registro", async (req, res) => {
+router.post("/registro", async (req, res, next) => {
 
     try {
         const user = UserSchema.parse(req.body);
 
         const email = await verificaEmail(user.email);
 
-        if (email) return res.status(401).json({
-            message: "Email já cadastrado.",
-        });
+        if (email) throw new errorEmail();
 
         const senhaHash = bcrypt.hashSync(user.senha, 10);
 
@@ -38,13 +37,7 @@ router.post("/registro", async (req, res) => {
             savedUser,
         });
     } catch (error) {
-        if (error instanceof z.ZodError)
-            return res.status(401).json({
-                message: error.errors,
-            });
-        res.status(500).json({
-            message: "Erro no servidor",
-        });
+        next(error);
     };
 })
 
