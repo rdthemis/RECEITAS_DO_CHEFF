@@ -78,9 +78,11 @@ router.delete("/receita/:id", auth, async (req, res) => {
 
         const userId = req.user.userId;
 
-        await removerReceita(id, userId);
+        const receitaRemovida = await removerReceita(id, userId);
 
-        res.status(204).send();
+        res.status(200).json({
+            receitaRemovida
+        });
     } catch (error) {
         res.status(500).json({
             message: "Erro no Servidor",

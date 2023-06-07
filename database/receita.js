@@ -35,7 +35,7 @@ const atualizarReceita = (receita, id, userId) => {
 }
 
 const removerReceita = (id, userId) => {
-    return prisma.receita.delete({
+    return prisma.receita.deleteMany({
         where: {
             id: id,
             userId: userId
