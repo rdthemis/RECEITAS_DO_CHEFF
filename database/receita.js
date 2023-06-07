@@ -1,6 +1,7 @@
+const router = require("../routes/receita");
 const prisma = require("./prisma");
 
-const saveReceita = (receita, userId) => {
+const salvarReceita = (receita, userId) => {
     return prisma.receita.create({
         data: {
             descricao: receita.descricao,
@@ -33,9 +34,19 @@ const atualizarReceita = (receita, id, userId) => {
     });
 }
 
+const removerReceita = (id, userId) => {
+    return prisma.receita.delete({
+        where: {
+            id: id,
+            userId: userId
+        }
+    })
+}
+
 
 module.exports = {
-    saveReceita,
+    salvarReceita,
     buscaReceitas,
-    atualizarReceita
+    atualizarReceita,
+    removerReceita
 }

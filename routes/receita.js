@@ -1,7 +1,7 @@
 const express = require("express");
 const z = require("zod");
 const auth = require("../middleware/auth");
-const { salvarReceita, buscaReceitas, atualizarReceita } = require("../database/receita");
+const { salvarReceita, buscaReceitas, atualizarReceita, removerReceita } = require("../database/receita");
 
 const router = express.Router();
 
@@ -50,8 +50,6 @@ router.get("/receitas", auth, async (req, res) => {
 
 router.put("/receita/:id", auth, async (req, res) => {
     try {
-
-
         const id = Number(req.params.id);
 
         const userId = req.user.userId;
@@ -76,8 +74,6 @@ router.put("/receita/:id", auth, async (req, res) => {
 
 router.delete("/receita/:id", auth, async (req, res) => {
     try {
-
-
         const id = Number(req.params.id);
 
         const userId = req.user.userId;
