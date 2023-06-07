@@ -2,7 +2,7 @@ const express = require("express");
 const z = require("zod");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { verificaEmail, saveUser } = require("../database/users");
+const { verificaEmail, saveUser } = require("../database/user");
 
 const router = express.Router();
 
@@ -57,14 +57,14 @@ router.post("/login", async (req, res) => {
     const senha = bcrypt.compareSync(data.senha, user.senha);
     if (!senha) return res.status(401).send();
 
-    user.id = req.userId;
-
     const token = jwt.sign({
         userId: user.id,
+        nome: user.nome,
     }, process.env.SECRET);
 
     res.status(201).json({
-        token,
+        success: true,
+        token: token,
     });
 })
 

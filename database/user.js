@@ -1,7 +1,7 @@
 const prisma = require("./prisma");
 
 const verificaEmail = (email) => {
-    return prisma.users.findFirst({
+    return prisma.user.findFirst({
         where: {
             email: email,
         },
@@ -9,7 +9,7 @@ const verificaEmail = (email) => {
 }
 
 const saveUser = (user) => {
-    return prisma.users.create({
+    return prisma.user.create({
         data: user
     })
 }
